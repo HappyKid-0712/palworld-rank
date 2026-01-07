@@ -54,6 +54,7 @@ export default async function Home() {
                   </td>
                   <td className="p-4 text-right text-sm text-neutral-500 font-mono">
                     {p.lastSeen.toLocaleString("zh-CN", {
+                      timeZone: "Asia/Shanghai",
                       month: "numeric",
                       day: "numeric",
                       hour: "2-digit",
