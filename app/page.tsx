@@ -1,12 +1,13 @@
 // app/page.tsx
 import { prisma } from "@/lib/prisma";
-// 强制动态渲染，保证每次刷新都是新的
+// 引入 Prisma 生成的类型定义
+import { Player } from "@prisma/client";
+
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  // 从数据库获取数据
   const players = await prisma.player.findMany({
-    orderBy: { level: "desc" }, // 按等级降序
+    orderBy: { level: "desc" },
   });
 
   return (
@@ -14,11 +15,9 @@ export default async function Home() {
       <div className="max-w-3xl mx-auto">
         <header className="mb-10 text-center">
           <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-blue-400 to-emerald-400 mb-2">
-            Palworld Legends
+            帕鲁世界——卷狗榜
           </h1>
-          <p className="text-neutral-500">
-            Big Data Class 4 - Server Leaderboard
-          </p>
+          <p className="text-neutral-500">钟大师全力贡献</p>
         </header>
 
         <div className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden shadow-2xl">
@@ -32,7 +31,8 @@ export default async function Home() {
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-800">
-              {players.map((p, i) => (
+              {/* 显式声明 p 的类型为 Player，i 的类型为 number */}
+              {players.map((p: Player, i: number) => (
                 <tr
                   key={p.id}
                   className="hover:bg-neutral-800/30 transition-colors"

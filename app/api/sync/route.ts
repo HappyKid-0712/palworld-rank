@@ -2,24 +2,26 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-// 实例化 Prisma (避免开发环境热重载产生过多连接)
+interface PalPlayer {
+  name: string;
+  playerId?: string;
+  userId?: string;
+  level: number;
+  location_x?: number;
+  location_y?: number;
+  ip?: string;
+  ping?: number;
+}
 
-export async function GET(request: Request) {
-  // 1. 简单的权限验证 (通过 URL 参数或 Header)
-  // Vercel Cron 会自动带上 Authorization Header，我们这里简单演示用 URL 参数方便浏览器测试
-  // 生产环境建议检查 Header
-  const { searchParams } = new URL(request.url);
-  const key = searchParams.get("key");
-
-  // 如果想严格点，检查 request.headers.get('authorization') === `Bearer ${process.env.CRON_SECRET}`
+// ✅ 修改点：把 request 改为 _request，或者直接删掉参数 ()
+export async function GET() {
+  // 2. 删除了未使用的 'searchParams' 和 'key' 变量，消除 unused variable 警告
 
   try {
-    // 2. 构造 Basic Auth
     const auth = Buffer.from(
       `${process.env.PAL_USER}:${process.env.PAL_PASS}`
     ).toString("base64");
 
-    // 3. 请求帕鲁服务器
     const res = await fetch(`${process.env.PAL_HOST}/v1/api/players`, {
       headers: { Authorization: `Basic ${auth}` },
       cache: "no-store",
@@ -27,22 +29,22 @@ export async function GET(request: Request) {
 
     if (!res.ok) throw new Error(`Palworld API Error: ${res.status}`);
 
-    const data = await res.json();
+    // 3. 显式断言返回数据的类型
+    const data = (await res.json()) as { players: PalPlayer[] };
     const players = data.players || [];
 
-    // 4. 写入数据库 (Upsert: 有则更新，无则插入)
     let updatedCount = 0;
 
     for (const p of players) {
-      // 数据清洗：API返回的数据可能不全，做个防御性编程
+      // p 现在有明确的类型 PalPlayer，不会报 any 错误
       await prisma.player.upsert({
-        where: { name: p.name }, // 根据名字查找
+        where: { name: p.name },
         update: {
           level: p.level,
           lastSeen: new Date(),
           loc_x: p.location_x,
           loc_y: p.location_y,
-          playerId: p.userId || p.playerId, // 尝试保存 ID
+          playerId: p.userId || p.playerId,
         },
         create: {
           name: p.name,
@@ -60,9 +62,11 @@ export async function GET(request: Request) {
       msg: `Synced ${updatedCount} players`,
       online_now: players.length,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    // 4. 安全地处理错误类型
+    const errorMessage = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { success: false, error: error.message },
+      { success: false, error: errorMessage },
       { status: 500 }
     );
   }
