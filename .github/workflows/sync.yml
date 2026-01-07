@@ -1,16 +1,19 @@
-name: Palworld Sync Cron
+name: Palworld Data Sync
 
 on:
   schedule:
-    # 每 10 分钟运行一次 (GitHub Actions 最小间隔通常建议 5-10 分钟)
-    - cron: '*/8 * * * *'
-  workflow_dispatch: # 允许手动点按钮触发
+    # 这里的 cron 语法代表：每 5 分钟运行一次
+    # 你可以修改这个时间，比如 '*/10 * * * *' 是每 10 分钟
+    - cron: "*/5 * * * *"
+  workflow_dispatch: # 这一行允许你在 GitHub 网页上手动点击按钮触发测试
 
 jobs:
-  sync_data:
+  trigger-sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Call Vercel API
+      - name: Call Vercel Sync API
         run: |
-          # 把下面的网址换成你 Vercel 部署后的实际网址
-          curl -X GET https://palworld-rank.vercel.app/
+          # 使用 curl 命令访问你的接口
+          # -L 表示跟随重定向 (防止 Vercel 跳转)
+          # -v 可以显示详细日志方便调试
+          curl -X GET -L -v "https://palworld-rank.vercel.app/api/sync"
