@@ -1,7 +1,5 @@
 // app/page.tsx
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
 // 强制动态渲染，保证每次刷新都是新的
 export const dynamic = "force-dynamic";
 

@@ -1,11 +1,8 @@
 // app/api/sync/route.ts
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 
 // 实例化 Prisma (避免开发环境热重载产生过多连接)
-const globalForPrisma = global as unknown as { prisma: PrismaClient };
-const prisma = globalForPrisma.prisma || new PrismaClient();
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
 
 export async function GET(request: Request) {
   // 1. 简单的权限验证 (通过 URL 参数或 Header)
