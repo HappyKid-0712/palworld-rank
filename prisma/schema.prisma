@@ -1,0 +1,27 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" // 注意这里改成了 postgresql
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Player {
+  id          Int      @id @default(autoincrement())
+  // 游戏里的 userId (SteamId/XboxId)，用作唯一标识更安全
+  // 如果API没返回userId，我们暂时用name做唯一标识，但帕鲁允许改名，长期看userId更好
+  playerId    String?  
+  name        String   @unique 
+  level       Int      @default(1)
+  lastSeen    DateTime @default(now()) @map("last_seen")
+  
+  // 记录一下玩家的坐标历史（可选，作为数据科学学生你可能感兴趣）
+  loc_x       Float?
+  loc_y       Float?
+
+  @@map("players")
+}
