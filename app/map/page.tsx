@@ -238,7 +238,7 @@ export default function MapPage() {
         >
           <div
             ref={mapContainerRef}
-            className="relative w-[800px] h-[800px] origin-center will-change-transform"
+            className="relative w-200 h-200 origin-center will-change-transform"
             style={{
               transform: `translate(${transform.x}px, ${transform.y}px) scale(${transform.scale})`,
             }}
